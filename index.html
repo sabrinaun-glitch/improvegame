@@ -1,266 +1,869 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
-    <base target="_top">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>二手交換平台</title>
+    <title>二手交換平台｜留言私聊</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Segoe UI', sans-serif; }
-        body { background: linear-gradient(145deg, #fef5e7 0%, #f7e9d7 100%); min-height: 100vh; padding: 2rem 1.5rem; position: relative; overflow-x: hidden; }
-        .bubble-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; overflow: hidden; }
-        .bubble { position: absolute; background: radial-gradient(circle at 30% 30%, rgba(249,115,22,0.25), rgba(249,115,22,0.08)); border-radius: 50%; animation: floatBubble linear infinite; }
-        @keyframes floatBubble { 0% { transform: translateY(100vh) scale(0.6); opacity: 0; } 20% { opacity: 0.5; } 80% { opacity: 0.6; } 100% { transform: translateY(-20vh) scale(1.2); opacity: 0; } }
-        .wrapper { max-width: 1400px; margin: 0 auto; position: relative; z-index: 2; }
-        .platform-container { background: rgba(255,252,245,0.94); backdrop-filter: blur(4px); border-radius: 2rem; box-shadow: 0 25px 45px -12px rgba(0,0,0,0.2); padding: 2rem; border: 1px solid rgba(249,115,22,0.25); }
-        .brand { text-align: center; margin-bottom: 2rem; border-bottom: 3px solid #f97316; display: inline-block; width: 100%; }
-        .system-name { font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg, #b45309, #f97316); background-clip: text; -webkit-background-clip: text; color: transparent; }
-        .tagline { color: #7c4f2b; font-size: 0.9rem; margin-top: 8px; }
-        .form-panel { background: #ffffffdd; border-radius: 1.5rem; padding: 1.6rem 2rem; margin-bottom: 2rem; border: 1px solid #fde1bd; }
-        .form-grid { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-bottom: 1rem; }
-        .field { flex: 1; min-width: 200px; }
-        .field label { display: block; font-weight: 700; font-size: 0.8rem; margin-bottom: 0.4rem; color: #5a3e28; }
-        .field label .required { color: #f97316; }
-        .field input, .field textarea { width: 100%; padding: 0.75rem 1rem; border-radius: 1rem; border: 1.5px solid #ffe2c1; background: #fffef7; font-size: 0.95rem; }
-        .field input:focus, .field textarea:focus { outline: none; border-color: #f97316; }
-        .btn-submit { background: #f97316; width: 100%; margin-top: 0.8rem; border: none; padding: 0.8rem; border-radius: 2rem; font-weight: 700; color: white; font-size: 1rem; cursor: pointer; transition: 0.2s; }
-        .btn-submit:hover { background: #ea580c; transform: translateY(-2px); }
-        .filter-section { display: flex; justify-content: center; gap: 0.9rem; margin-bottom: 2rem; flex-wrap: wrap; }
-        .filter-chip { background: #f0e7db; border: none; padding: 0.5rem 1.8rem; border-radius: 40px; font-weight: 600; font-size: 0.9rem; color: #5a3e28; cursor: pointer; transition: all 0.2s; }
-        .filter-chip.active-filter { background: #f97316; color: white; }
-        .cards-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 1.8rem; }
-        .record-card { background: white; border-radius: 1.5rem; overflow: hidden; transition: 0.2s ease; box-shadow: 0 8px 18px rgba(0,0,0,0.08); border: 1px solid #ffdead; }
-        .record-card:hover { transform: translateY(-5px); }
-        .card-inner { padding: 1.2rem 1.3rem 0.8rem 1.3rem; }
-        .card-title { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 0.6rem; }
-        .item-name { font-size: 1.2rem; font-weight: 800; color: #2b241c; }
-        .status-pill { font-size: 0.7rem; font-weight: 700; padding: 4px 12px; border-radius: 30px; background: #eef2ff; color: #1e40af; }
-        .status-pill.done-status { background: #d1fae5; color: #065f46; }
-        .field-row { margin: 10px 0; font-size: 0.9rem; color: #4b3a2a; display: flex; flex-wrap: wrap; gap: 6px; }
-        .field-label { font-weight: 700; min-width: 65px; color: #a55c2a; }
-        .meta { font-size: 0.7rem; color: #ac8e6f; border-top: 1px solid #ffe1c2; margin-top: 10px; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-        .btn-toggle { background: #fff0e0; border: none; padding: 5px 14px; border-radius: 30px; font-size: 0.7rem; font-weight: 600; cursor: pointer; color: #f97316; }
-        .btn-toggle:hover { background: #f97316; color: white; }
-        .comment-section { background: #fefaf5; border-top: 1px solid #ffefda; padding: 0.9rem 1.2rem 1rem; margin-top: 0.5rem; }
-        .comment-title { font-size: 0.75rem; font-weight: 700; color: #b45309; margin-bottom: 0.6rem; }
-        .comment-form { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.8rem; }
-        .comment-name { width: 100px; padding: 0.5rem 0.7rem; border-radius: 2rem; border: 1.5px solid #ffe2c1; font-size: 0.75rem; background: white; }
-        .comment-text { flex: 1; padding: 0.5rem 0.7rem; border-radius: 2rem; border: 1.5px solid #ffe2c1; font-size: 0.75rem; background: white; }
-        .btn-comment { background: #f97316; border: none; padding: 0.5rem 1rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 600; color: white; cursor: pointer; }
-        .comment-list { max-height: 180px; overflow-y: auto; }
-        .comment-item { background: white; border-radius: 1rem; padding: 0.5rem 0.8rem; margin-bottom: 0.5rem; border: 1px solid #ffefda; font-size: 0.75rem; }
-        .comment-name-link { font-weight: 700; color: #f97316; cursor: pointer; text-decoration: underline; }
-        .comment-name-link:hover { color: #ea580c; }
-        .comment-content { color: #4b3a2a; margin: 4px 0; }
-        .comment-time { font-size: 0.6rem; color: #bc9a7a; text-align: right; }
-        .empty-comment { font-size: 0.7rem; color: #bc9a7a; text-align: center; padding: 0.5rem; }
-        .empty-msg { text-align: center; padding: 3rem; background: #fff6ea; border-radius: 2rem; color: #ad8b6a; }
-        footer { text-align: center; margin-top: 2rem; font-size: 0.7rem; color: #b48b65; }
-        @media (max-width: 640px) { .platform-container { padding: 1.2rem; } .cards-container { grid-template-columns: 1fr; } .comment-form { flex-direction: column; } .comment-name { width: 100%; } }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Inter', -apple-system, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #fef5e7 0%, #f7e9d7 100%);
+            position: relative;
+            overflow-x: hidden;
+            padding: 2rem 1.5rem;
+        }
+
+        .bubble-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .bubble {
+            position: absolute;
+            background: radial-gradient(circle at 30% 30%, rgba(249, 115, 22, 0.3), rgba(249, 115, 22, 0.08));
+            border-radius: 50%;
+            animation: floatBubble linear infinite;
+            backdrop-filter: blur(1px);
+        }
+
+        @keyframes floatBubble {
+            0% { transform: translateY(100vh) scale(0.6); opacity: 0; }
+            20% { opacity: 0.5; }
+            80% { opacity: 0.6; }
+            100% { transform: translateY(-20vh) scale(1.2); opacity: 0; }
+        }
+
+        .wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .platform-container {
+            background: rgba(255, 252, 245, 0.94);
+            backdrop-filter: blur(4px);
+            border-radius: 2rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.2);
+            padding: 2rem;
+            border: 1px solid rgba(249, 115, 22, 0.25);
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 3px solid #f97316;
+            display: inline-block;
+            width: 100%;
+        }
+        .system-name {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #b45309, #f97316, #fdba74);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .tagline {
+            color: #7c4f2b;
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+        .sync-status {
+            font-size: 0.7rem;
+            margin-top: 5px;
+            color: #f97316;
+        }
+        .sync-status.success { color: #10b981; }
+        .sync-status.error { color: #ef4444; }
+
+        .form-panel {
+            background: #ffffffdd;
+            border-radius: 1.5rem;
+            padding: 1.6rem 2rem;
+            margin-bottom: 2.2rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid #fde1bd;
+        }
+        .form-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        .field {
+            flex: 1;
+            min-width: 200px;
+        }
+        .field label {
+            display: block;
+            font-weight: 700;
+            font-size: 0.8rem;
+            margin-bottom: 0.4rem;
+            color: #5a3e28;
+        }
+        .field label .required {
+            color: #f97316;
+        }
+        .field input, .field textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            border: 1.5px solid #ffe2c1;
+            background: #fffef7;
+            font-size: 0.95rem;
+        }
+        .field input:focus, .field textarea:focus {
+            outline: none;
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+        }
+        .btn-submit {
+            background: #f97316;
+            width: 100%;
+            margin-top: 0.8rem;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 2rem;
+            font-weight: 700;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-submit:hover {
+            background: #ea580c;
+            transform: translateY(-2px);
+        }
+
+        .filter-section {
+            display: flex;
+            justify-content: center;
+            gap: 0.9rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .filter-chip {
+            background: #f0e7db;
+            border: none;
+            padding: 0.5rem 1.8rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #5a3e28;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-chip.active-filter {
+            background: #f97316;
+            color: white;
+            box-shadow: 0 4px 10px rgba(249,115,22,0.3);
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1.8rem;
+        }
+        .record-card {
+            background: white;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            transition: 0.2s ease;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+            border: 1px solid #ffdead;
+            display: flex;
+            flex-direction: column;
+        }
+        .record-card:hover {
+            transform: translateY(-5px);
+        }
+        .card-inner {
+            padding: 1.2rem 1.3rem 0.8rem 1.3rem;
+        }
+        .card-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 0.6rem;
+        }
+        .item-name {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #2b241c;
+        }
+        .status-pill {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 30px;
+            background: #eef2ff;
+            color: #1e40af;
+        }
+        .status-pill.done-status {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .field-row {
+            margin: 10px 0;
+            font-size: 0.9rem;
+            color: #4b3a2a;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .field-label {
+            font-weight: 700;
+            min-width: 65px;
+            color: #a55c2a;
+        }
+        .meta {
+            font-size: 0.7rem;
+            color: #ac8e6f;
+            border-top: 1px solid #ffe1c2;
+            margin-top: 10px;
+            padding-top: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-toggle {
+            background: #fff0e0;
+            border: none;
+            padding: 5px 14px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #f97316;
+        }
+        .btn-toggle:hover {
+            background: #f97316;
+            color: white;
+        }
+
+        .comment-section {
+            background: #fefaf5;
+            border-top: 1px solid #ffefda;
+            padding: 0.9rem 1.2rem 1rem;
+            margin-top: 0.5rem;
+        }
+        .comment-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #b45309;
+            margin-bottom: 0.6rem;
+        }
+        .comment-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+        .comment-name {
+            width: 100px;
+            padding: 0.5rem 0.7rem;
+            border-radius: 2rem;
+            border: 1.5px solid #ffe2c1;
+            font-size: 0.75rem;
+            background: white;
+        }
+        .comment-text {
+            flex: 1;
+            padding: 0.5rem 0.7rem;
+            border-radius: 2rem;
+            border: 1.5px solid #ffe2c1;
+            font-size: 0.75rem;
+            background: white;
+        }
+        .btn-comment {
+            background: #f97316;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+        }
+        .btn-comment:hover {
+            background: #ea580c;
+        }
+        .comment-list {
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .comment-item {
+            background: white;
+            border-radius: 1rem;
+            padding: 0.5rem 0.8rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #ffefda;
+            font-size: 0.75rem;
+        }
+        .comment-name-link {
+            font-weight: 700;
+            color: #f97316;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .comment-name-link:hover {
+            color: #ea580c;
+        }
+        .comment-content {
+            color: #4b3a2a;
+            margin: 4px 0;
+        }
+        .comment-time {
+            font-size: 0.6rem;
+            color: #bc9a7a;
+            text-align: right;
+        }
+        .empty-comment {
+            font-size: 0.7rem;
+            color: #bc9a7a;
+            text-align: center;
+            padding: 0.5rem;
+        }
+        .empty-msg {
+            text-align: center;
+            padding: 3rem;
+            background: #fff6ea;
+            border-radius: 2rem;
+            color: #ad8b6a;
+        }
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            color: #b48b65;
+        }
+
+        .chat-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .chat-container {
+            width: 90%;
+            max-width: 450px;
+            height: 550px;
+            background: white;
+            border-radius: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+        .chat-header {
+            background: #f97316;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-header h3 {
+            font-size: 1rem;
+        }
+        .chat-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #fef9ef;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        .chat-bubble {
+            max-width: 80%;
+            padding: 0.6rem 0.9rem;
+            border-radius: 1.2rem;
+            font-size: 0.85rem;
+            word-break: break-word;
+        }
+        .chat-bubble.seller {
+            background: #f97316;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0.3rem;
+        }
+        .chat-bubble.buyer {
+            background: #e5e7eb;
+            color: #1f2937;
+            align-self: flex-start;
+            border-bottom-left-radius: 0.3rem;
+        }
+        .chat-input-area {
+            display: flex;
+            padding: 0.8rem;
+            gap: 0.5rem;
+            background: white;
+            border-top: 1px solid #ffefda;
+        }
+        .chat-input {
+            flex: 1;
+            padding: 0.6rem;
+            border-radius: 2rem;
+            border: 1.5px solid #ffe2c1;
+            font-size: 0.85rem;
+        }
+        .chat-send {
+            background: #f97316;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        @media (max-width: 640px) {
+            .platform-container { padding: 1.2rem; }
+            .cards-container { grid-template-columns: 1fr; }
+            .comment-form { flex-direction: column; }
+            .comment-name { width: 100%; }
+        }
     </style>
 </head>
 <body>
+
 <div class="bubble-bg" id="bubbleBg"></div>
+
 <div class="wrapper">
     <div class="platform-container">
-        <div class="brand"><div class="system-name">📦 二手交換平台</div><div class="tagline">💬 匿名留言 · 點擊名字開啟私聊</div></div>
+        <div class="brand">
+            <div class="system-name">📦 二手交換平台</div>
+            <div class="tagline">💬 匿名留言 · 點擊名字開啟私聊</div>
+            <div id="syncStatus" class="sync-status"></div>
+        </div>
+
         <div class="form-panel">
             <div class="form-grid">
-                <div class="field"><label>📌 物品名稱 <span class="required">*</span></label><input type="text" id="itemNameInput" placeholder="例: 二手木吉他"></div>
-                <div class="field"><label>🏷️ 分類 <span class="required">*</span></label><input type="text" id="categoryInput" placeholder="例: 樂器"></div>
-                <div class="field"><label>✏️ 賣家聯絡方式</label><textarea id="remarkInput" rows="1" placeholder="Line ID / 電話"></textarea></div>
+                <div class="field">
+                    <label>📌 物品名稱 <span class="required">*</span></label>
+                    <input type="text" id="itemNameInput" placeholder="例: 二手木吉他">
+                </div>
+                <div class="field">
+                    <label>🏷️ 分類 <span class="required">*</span></label>
+                    <input type="text" id="categoryInput" placeholder="例: 樂器">
+                </div>
+                <div class="field">
+                    <label>✏️ 賣家聯絡方式</label>
+                    <textarea id="remarkInput" rows="1" placeholder="Line ID / 電話"></textarea>
+                </div>
             </div>
             <button class="btn-submit" id="addRecordBtn">＋ 上架物品</button>
         </div>
+
         <div class="filter-section">
-            <button class="filter-chip" data-filter="all">📋 全部</button>
+            <button class="filter-chip active-filter" data-filter="all">📋 全部</button>
             <button class="filter-chip" data-filter="active">🟢 上架中</button>
             <button class="filter-chip" data-filter="done">✅ 已售出</button>
         </div>
-        <div id="recordsList" class="cards-container"><div style="text-align:center; padding:40px;">載入中...</div></div>
-        <footer>📢 點擊匿名者名字即可開啟聊天室</footer>
+
+        <div id="recordsList" class="cards-container"></div>
+        <footer>📢 點擊匿名者名字即可開啟聊天室，與對方私訊聯絡</footer>
+    </div>
+</div>
+
+<div id="chatModal" class="chat-modal">
+    <div class="chat-container">
+        <div class="chat-header">
+            <h3 id="chatTitle">正在與 匿名者 聊天</h3>
+            <button class="chat-close" id="chatCloseBtn">&times;</button>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chatInput" placeholder="輸入訊息...">
+            <button class="chat-send" id="chatSendBtn">發送</button>
+        </div>
     </div>
 </div>
 
 <script>
-    let currentFilter = "all";
-    let allRecords = [];
-    const API_URL = window.location.href;
+    (function() {
+        // ======================= 設定 =======================
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbysD0Y5tSR0qlOS9PDV06yhsWsdH6TAbw_Q5xPr7U1EJ4kQiqeyjk3rmzPjZ7PrJXlR/exec";
+        const STORAGE_KEY = "records";
+        
+        let currentFilter = "all";
+        let activeChat = {};
 
-    function generateId() { return Date.now() + '_' + Math.random().toString(36).substring(2, 8); }
-
-    // 修正版 loadData：先用 text() 再 JSON.parse
-    async function loadData() {
-        try {
-            const response = await fetch(API_URL + "?action=getRecords");
-            const text = await response.text();
-            console.log("收到原始資料:", text);
-            const records = JSON.parse(text);
-            allRecords = records;
-            render();
-        } catch(e) {
-            console.error("載入失敗:", e);
-            document.getElementById("recordsList").innerHTML = '<div class="empty-msg">讀取失敗，請重整</div>';
+        function setSyncStatus(text, isError) {
+            var el = document.getElementById("syncStatus");
+            if (el) {
+                el.textContent = text;
+                el.className = "sync-status " + (isError ? "error" : "success");
+                setTimeout(function() {
+                    if (document.getElementById("syncStatus") === el && el.textContent === text) {
+                        el.textContent = "";
+                        el.className = "sync-status";
+                    }
+                }, 3000);
+            }
+            console.log("[Sync]", text);
         }
-    }
 
-    async function addItem() {
-        const itemName = document.getElementById("itemNameInput").value.trim();
-        const category = document.getElementById("categoryInput").value.trim();
-        const remark = document.getElementById("remarkInput").value;
-        if (!itemName) { alert("請填寫物品名稱"); return; }
-        if (!category) { alert("請填寫分類"); return; }
-        const newRecord = {
-            id: generateId(),
-            createdAt: new Date().toISOString(),
-            status: "active",
-            itemName: itemName,
-            category: category,
-            remark: remark,
-            comments: []
-        };
-        try {
-            await fetch(API_URL, {
+        // ========== 泡泡背景 ==========
+        function createBubbles() {
+            var bg = document.getElementById("bubbleBg");
+            if (!bg) return;
+            bg.innerHTML = "";
+            var count = Math.floor(Math.random() * 20) + 45;
+            for (var i = 0; i < count; i++) {
+                var b = document.createElement("div");
+                b.className = "bubble";
+                var size = Math.random() * 80 + 25;
+                b.style.width = size + "px";
+                b.style.height = size + "px";
+                b.style.left = Math.random() * 100 + "%";
+                b.style.animationDuration = (Math.random() * 14 + 7) + "s";
+                b.style.animationDelay = (Math.random() * 20) + "s";
+                b.style.opacity = Math.random() * 0.5 + 0.2;
+                bg.appendChild(b);
+            }
+        }
+        createBubbles();
+        setInterval(createBubbles, 18000);
+
+        // ========== localStorage 操作 ==========
+        function loadData() {
+            try {
+                var stored = localStorage.getItem(STORAGE_KEY);
+                if (!stored) return [];
+                var parsed = JSON.parse(stored);
+                if (Array.isArray(parsed)) return parsed;
+                return [];
+            } catch(e) {
+                console.error("loadData error", e);
+                return [];
+            }
+        }
+
+        function saveData(records) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        }
+
+        function generateId() {
+            return Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+        }
+
+        // ========== Google Sheet 同步 ==========
+        // 關鍵修正：使用 text/plain 避免 CORS preflight
+        function syncToSheet(payload) {
+            if (!APPS_SCRIPT_URL) return;
+            
+            setSyncStatus("🔄 同步中...", false);
+            
+            fetch(APPS_SCRIPT_URL, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "addRecord", record: newRecord })
+                headers: { "Content-Type": "text/plain" },  // 關鍵！
+                body: JSON.stringify(payload)
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error("HTTP " + res.status);
+                return res.json();
+            })
+            .then(function(data) {
+                if (data && data.ok) {
+                    setSyncStatus("✓ 同步成功", false);
+                } else {
+                    throw new Error(data ? data.error : "未知錯誤");
+                }
+            })
+            .catch(function(err) {
+                console.error("Sync error:", err);
+                setSyncStatus("✗ 同步失敗: " + err.message, true);
             });
-            loadData();
+        }
+
+        // ========== 資料操作 ==========
+        function addRecord(record) {
+            var records = loadData();
+            records.push(record);
+            saveData(records);
+            render();
+            syncToSheet({ action: "create", record: record });
+        }
+
+        function updateRecord(id, changes) {
+            var records = loadData();
+            for (var i = 0; i < records.length; i++) {
+                if (records[i].id === id) {
+                    for (var key in changes) {
+                        if (changes.hasOwnProperty(key)) {
+                            records[i][key] = changes[key];
+                        }
+                    }
+                    break;
+                }
+            }
+            saveData(records);
+            render();
+            syncToSheet({ action: "update", id: id, changes: changes });
+        }
+
+        function addComment(recordId, name, content) {
+            var records = loadData();
+            for (var i = 0; i < records.length; i++) {
+                if (records[i].id === recordId) {
+                    if (!records[i].comments) records[i].comments = [];
+                    records[i].comments.unshift({
+                        id: generateId(),
+                        name: name,
+                        content: content,
+                        createdAt: new Date().toISOString()
+                    });
+                    break;
+                }
+            }
+            saveData(records);
+            render();
+            
+            var updated = loadData().find(function(r) { return r.id === recordId; });
+            if (updated) {
+                syncToSheet({ action: "update", id: recordId, changes: { comments: updated.comments } });
+            }
+        }
+
+        // ========== 渲染 ==========
+        function escapeHtml(str) {
+            if (!str) return "";
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function render() {
+            var all = loadData();
+            var filtered = [];
+            if (currentFilter === "all") filtered = all;
+            else if (currentFilter === "active") {
+                for (var i = 0; i < all.length; i++) {
+                    if (all[i].status === "active") filtered.push(all[i]);
+                }
+            } else {
+                for (var i = 0; i < all.length; i++) {
+                    if (all[i].status === "done") filtered.push(all[i]);
+                }
+            }
+            
+            var container = document.getElementById("recordsList");
+            if (!container) return;
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-msg">🌟 目前沒有物品，趕快上架一件二手好物吧！</div>';
+                return;
+            }
+            
+            var html = "";
+            for (var i = 0; i < filtered.length; i++) {
+                var r = filtered[i];
+                var isDone = r.status === "done";
+                var statusText = isDone ? "✅ 已售出" : "🟢 上架中";
+                var statusClass = isDone ? "done-status" : "";
+                var remarkHtml = r.remark && r.remark.trim() !== "" 
+                    ? '<div class="field-row"><span class="field-label">📞 賣家</span><span>' + escapeHtml(r.remark) + '</span></div>'
+                    : '<div class="field-row"><span class="field-label">📞 賣家</span><span style="color:#bc9a7a;">未提供</span></div>';
+                
+                var date = new Date(r.createdAt);
+                var dateStr = (date.getMonth()+1) + '/' + date.getDate() + ' ' + 
+                    date.getHours().toString().padStart(2,'0') + ':' + date.getMinutes().toString().padStart(2,'0');
+                
+                var comments = r.comments || [];
+                var commentsHtml = "";
+                if (comments.length === 0) {
+                    commentsHtml = '<div class="empty-comment">✨ 暫無留言，來當第一個詢問的人～</div>';
+                } else {
+                    for (var j = 0; j < comments.length; j++) {
+                        var c = comments[j];
+                        var cd = new Date(c.createdAt);
+                        var ct = (cd.getMonth()+1) + '/' + cd.getDate() + ' ' + 
+                            cd.getHours().toString().padStart(2,'0') + ':' + cd.getMinutes().toString().padStart(2,'0');
+                        commentsHtml += '<div class="comment-item">' +
+                            '<div><span class="comment-name-link" data-id="' + r.id + '" data-name="' + escapeHtml(c.name) + '" data-remark="' + escapeHtml(r.remark || '') + '" data-item="' + escapeHtml(r.itemName) + '">📝 ' + escapeHtml(c.name) + '</span> 說：</div>' +
+                            '<div class="comment-content">💬 ' + escapeHtml(c.content) + '</div>' +
+                            '<div class="comment-time">' + ct + '</div>' +
+                            '</div>';
+                    }
+                }
+                
+                html += '<div class="record-card">' +
+                    '<div class="card-inner">' +
+                        '<div class="card-title">' +
+                            '<span class="item-name">📦 ' + escapeHtml(r.itemName) + '</span>' +
+                            '<span class="status-pill ' + statusClass + '">' + statusText + '</span>' +
+                        '</div>' +
+                        '<div class="field-row"><span class="field-label">🏷️ 分類</span><span>' + escapeHtml(r.category) + '</span></div>' +
+                        remarkHtml +
+                        '<div class="meta">' +
+                            '<span>🕒 ' + dateStr + '</span>' +
+                            '<button class="btn-toggle" data-id="' + r.id + '" data-status="' + r.status + '">' + (r.status === "active" ? "🔁 標記已售出" : "🔄 重新上架") + '</button>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="comment-section">' +
+                        '<div class="comment-title">💬 匿名留言區 · 點擊名字開啟聊天室</div>' +
+                        '<div class="comment-form">' +
+                            '<input type="text" class="comment-name" id="commentName_' + r.id + '" placeholder="匿名稱呼" maxlength="20">' +
+                            '<input type="text" class="comment-text" id="commentText_' + r.id + '" placeholder="留言內容 + 您的Line/電話...">' +
+                            '<button class="btn-comment" data-id="' + r.id + '">留言</button>' +
+                        '</div>' +
+                        '<div class="comment-list">' + commentsHtml + '</div>' +
+                    '</div>' +
+                '</div>';
+            }
+            container.innerHTML = html;
+            
+            var toggles = document.querySelectorAll(".btn-toggle");
+            for (var t = 0; t < toggles.length; t++) {
+                toggles[t].onclick = function(e) {
+                    var btn = e.currentTarget;
+                    var id = btn.getAttribute("data-id");
+                    var cur = btn.getAttribute("data-status");
+                    var newStatus = cur === "active" ? "done" : "active";
+                    updateRecord(id, { status: newStatus });
+                };
+            }
+            
+            var commentBtns = document.querySelectorAll(".btn-comment");
+            for (var b = 0; b < commentBtns.length; b++) {
+                commentBtns[b].onclick = function(e) {
+                    var btn = e.currentTarget;
+                    var id = btn.getAttribute("data-id");
+                    var nameInput = document.getElementById("commentName_" + id);
+                    var textInput = document.getElementById("commentText_" + id);
+                    if (!nameInput || !textInput) return;
+                    var name = nameInput.value.trim();
+                    var content = textInput.value.trim();
+                    if (!name) { alert("請輸入匿名稱呼"); return; }
+                    if (!content) { alert("請輸入留言內容"); return; }
+                    addComment(id, name, content);
+                    nameInput.value = "";
+                    textInput.value = "";
+                };
+            }
+            
+            var nameLinks = document.querySelectorAll(".comment-name-link");
+            for (var l = 0; l < nameLinks.length; l++) {
+                nameLinks[l].onclick = function(e) {
+                    var link = e.currentTarget;
+                    var id = link.getAttribute("data-id");
+                    var name = link.getAttribute("data-name");
+                    var remark = link.getAttribute("data-remark");
+                    var item = link.getAttribute("data-item");
+                    
+                    var modal = document.getElementById("chatModal");
+                    document.getElementById("chatTitle").innerText = '💬 與「' + name + '」聊 ' + item;
+                    
+                    var msgDiv = document.getElementById("chatMessages");
+                    msgDiv.innerHTML = '';
+                    
+                    if (remark && remark !== "undefined" && remark !== "") {
+                        var sysMsg = document.createElement("div");
+                        sysMsg.className = "chat-bubble buyer";
+                        sysMsg.style.background = "#f0e7db";
+                        sysMsg.innerText = "📞 賣家：" + remark;
+                        msgDiv.appendChild(sysMsg);
+                    }
+                    
+                    activeChat.name = name;
+                    modal.style.display = "flex";
+                };
+            }
+        }
+        
+        // ========== 初始化 ==========
+        document.getElementById("addRecordBtn").onclick = function() {
+            var itemName = document.getElementById("itemNameInput").value;
+            var category = document.getElementById("categoryInput").value;
+            var remark = document.getElementById("remarkInput").value;
+            if (!itemName.trim()) { alert("請填寫物品名稱"); return; }
+            if (!category.trim()) { alert("請填寫分類"); return; }
+            
+            addRecord({
+                id: generateId(),
+                createdAt: new Date().toISOString(),
+                status: "active",
+                itemName: itemName.trim(),
+                category: category.trim(),
+                remark: remark.trim(),
+                comments: []
+            });
+            
             document.getElementById("itemNameInput").value = "";
             document.getElementById("categoryInput").value = "";
             document.getElementById("remarkInput").value = "";
-        } catch(e) {
-            alert("新增失敗");
-        }
-    }
-
-    async function updateStatus(id, newStatus) {
-        try {
-            await fetch(API_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "updateRecord", id: id, changes: { status: newStatus } })
-            });
-            loadData();
-        } catch(e) {
-            alert("更新失敗");
-        }
-    }
-
-    async function addComment(recordId) {
-        const name = document.getElementById(`name_${recordId}`).value.trim();
-        const content = document.getElementById(`txt_${recordId}`).value.trim();
-        if (!name) { alert("請輸入匿名稱呼"); return; }
-        if (!content) { alert("請輸入留言內容"); return; }
-        const record = allRecords.find(r => r.id === recordId);
-        if (record) {
-            if (!record.comments) record.comments = [];
-            record.comments.unshift({ id: generateId(), name: name, content: content, createdAt: new Date().toISOString() });
-            try {
-                await fetch(API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "updateRecord", id: recordId, changes: { comments: record.comments } })
-                });
-                render();
-            } catch(e) { alert("留言失敗"); }
-        }
-        document.getElementById(`name_${recordId}`).value = "";
-        document.getElementById(`txt_${recordId}`).value = "";
-    }
-
-    function privateChat(name, sellerRemark, itemName) {
-        let msg = `🔔 與「${name}」私聊關於「${itemName}」\n\n`;
-        if (sellerRemark && sellerRemark !== "未提供") msg += `📞 賣家聯絡方式：${sellerRemark}\n\n請複製資訊聯絡賣家。`;
-        else msg += `⚠️ 賣家尚未留下聯絡方式，建議在留言區留下您的 Line ID。`;
-        alert(msg);
-    }
-
-    function render() {
-        let filtered = allRecords.filter(r => currentFilter === "all" ? true : r.status === currentFilter);
-        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        const container = document.getElementById("recordsList");
-        if (filtered.length === 0) {
-            container.innerHTML = '<div class="empty-msg">🌟 目前沒有物品，趕快上架一件二手好物吧！</div>';
-            return;
-        }
-        container.innerHTML = filtered.map(record => `
-            <div class="record-card">
-                <div class="card-inner">
-                    <div class="card-title">
-                        <span class="item-name">📦 ${escapeHtml(record.itemName)}</span>
-                        <span class="status-pill ${record.status === 'done' ? 'done-status' : ''}">
-                            ${record.status === 'done' ? '✅ 已售出' : '🟢 上架中'}
-                        </span>
-                    </div>
-                    <div class="field-row"><span class="field-label">🏷️ 分類</span> ${escapeHtml(record.category)}</div>
-                    <div class="field-row"><span class="field-label">📞 賣家</span> ${record.remark ? escapeHtml(record.remark) : '<span style="color:#bc9a7a;">未提供</span>'}</div>
-                    <div class="meta">
-                        <span>🕒 ${new Date(record.createdAt).toLocaleString()}</span>
-                        <button class="btn-toggle" onclick="updateStatus('${record.id}', '${record.status === 'active' ? 'done' : 'active'}')">
-                            ${record.status === "active" ? "🔁 標記已售出" : "🔄 重新上架"}
-                        </button>
-                    </div>
-                </div>
-                <div class="comment-section">
-                    <div class="comment-title">💬 匿名留言區 · 點擊名字開啟私聊</div>
-                    <div class="comment-form">
-                        <input type="text" class="comment-name" id="name_${record.id}" placeholder="匿名稱呼" maxlength="20">
-                        <input type="text" class="comment-text" id="txt_${record.id}" placeholder="留言內容 + Line/電話...">
-                        <button class="btn-comment" onclick="addComment('${record.id}')">留言</button>
-                    </div>
-                    <div class="comment-list">
-                        ${(record.comments || []).map(c => `
-                            <div class="comment-item">
-                                <div><span class="comment-name-link" onclick="privateChat('${escapeHtml(c.name)}', '${escapeHtml(record.remark || "")}', '${escapeHtml(record.itemName)}')">📝 ${escapeHtml(c.name)}</span> 說：</div>
-                                <div class="comment-content">💬 ${escapeHtml(c.content)}</div>
-                                <div class="comment-time">${new Date(c.createdAt).toLocaleString()}</div>
-                            </div>
-                        `).join('') || '<div class="empty-comment">✨ 暫無留言，來當第一個詢問的人～</div>'}
-                    </div>
-                </div>
-            </div>
-        `).join("");
-    }
-
-    function escapeHtml(str) { if (!str) return ""; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
-
-    function initFilters() {
-        document.querySelectorAll(".filter-chip").forEach(btn => {
-            btn.onclick = () => {
-                currentFilter = btn.dataset.filter;
-                document.querySelectorAll(".filter-chip").forEach(b => b.classList.remove("active-filter"));
-                btn.classList.add("active-filter");
+        };
+        
+        var filters = document.querySelectorAll(".filter-chip");
+        for (var f = 0; f < filters.length; f++) {
+            filters[f].onclick = function() {
+                var val = this.getAttribute("data-filter");
+                currentFilter = val;
+                for (var i = 0; i < filters.length; i++) {
+                    if (filters[i].getAttribute("data-filter") === val) {
+                        filters[i].classList.add("active-filter");
+                    } else {
+                        filters[i].classList.remove("active-filter");
+                    }
+                }
                 render();
             };
-        });
-        document.querySelector(".filter-chip[data-filter='all']")?.classList.add("active-filter");
-    }
-
-    function createBubbles() {
-        const bg = document.getElementById("bubbleBg");
-        if (!bg) return;
-        bg.innerHTML = "";
-        for (let i = 0; i < 35; i++) {
-            const b = document.createElement("div");
-            b.classList.add("bubble");
-            const size = Math.random() * 70 + 20;
-            b.style.width = size + "px";
-            b.style.height = size + "px";
-            b.style.left = Math.random() * 100 + "%";
-            b.style.animationDuration = Math.random() * 14 + 6 + "s";
-            b.style.animationDelay = Math.random() * 15 + "s";
-            bg.appendChild(b);
         }
-    }
-
-    window.onload = function() {
-        initFilters();
-        document.getElementById("addRecordBtn").onclick = addItem;
-        loadData();
-        createBubbles();
-        setInterval(createBubbles, 20000);
-    };
+        
+        document.getElementById("chatCloseBtn").onclick = function() {
+            document.getElementById("chatModal").style.display = "none";
+        };
+        document.getElementById("chatSendBtn").onclick = function() {
+            var input = document.getElementById("chatInput");
+            var text = input.value.trim();
+            if (!text) return;
+            var container = document.getElementById("chatMessages");
+            var msg = document.createElement("div");
+            msg.className = "chat-bubble seller";
+            msg.innerText = "🛒 我：" + text;
+            container.appendChild(msg);
+            container.scrollTop = container.scrollHeight;
+            input.value = "";
+        };
+        document.getElementById("chatModal").onclick = function(e) {
+            if (e.target === this) this.style.display = "none";
+        };
+        
+        render();
+    })();
 </script>
 </body>
 </html>
